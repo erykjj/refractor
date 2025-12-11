@@ -1,0 +1,105 @@
+name: 'Linux and Windows v1.0.0'
+
+on:
+  workflow_call:
+    inputs:
+      TAG:
+        default: 'testing'
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      TAG:
+        default: 'testing'
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build for Linux and Windows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Nim
+        uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: '2.2.6'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies and compiler
+        run: |
+          nimble install -y zippy
+          sudo snap install zig --classic --beta
+          nimble install zigcc
+
+      - name: Clear dist directory
+        run: |
+          rm -rf dist/*
+          mkdir -p dist
+          mkdir -p dist/lib
+
+      - name: Compile and package
+        run: |
+          nim c -d:linux -d:strip -d:release --out:dist/refractor src/refractor.nim
+          cp lib/libfocalizer-x86_64.so dist/libfocalizer.so
+          tar -czvf dist/refractor_linux_x86_64.tgz -C dist refractor libfocalizer.so
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: refractor_linux_x86_64.tgz
+          path: dist/refractor_linux_x86_64.tgz
+
+      - name: Clear dist directory
+        run: |
+          rm -rf dist/*
+          mkdir -p dist
+          mkdir -p dist/lib
+
+      - name: Compile and package
+        run: |
+          nim c --cc:clang --clang.exe="zigcc" --clang.linkerexe="zigcc" --passc:"-target aarch64-linux-gnu" --passl:"-target aarch64-linux-gnu" --forceBuild:on --os:linux --cpu:arm64 -d:linux -d:strip -d:release --out:dist/refractor src/refractor.nim
+          cp lib/libfocalizer-arm64.so dist/libfocalizer.so
+          tar -czvf dist/refractor_linux_arm64.tgz -C dist refractor libfocalizer.so
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: refractor_linux_arm64.tgz
+          path: dist/refractor_linux_arm64.tgz
+
+      - name: Clear dist directory
+        run: |
+          rm -rf dist/*
+          mkdir -p dist
+
+      - name: Compile and package
+        run: |
+          nim c --cc:clang --clang.exe="zigcc" --clang.linkerexe="zigcc" --passc:"-target x86_64-windows" --passl:"-target x86_64-windows" --forceBuild:on --os:windows -d:windows -d:strip -d:release --out:dist/refractor.exe src/refractor.nim
+          cp lib/focalizer-amd64.dll dist/focalizer.dll
+          zip -j dist/refractor_windows_amd64.zip dist/refractor.exe dist/focalizer.dll
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: refractor_windows_amd64.zip
+          path: dist/refractor_windows_amd64.zip
+
+      - name: Clear dist directory
+        run: |
+          rm -rf dist/*
+          mkdir -p dist
+
+      - name: Compile and package
+        run: |
+          nim c --cc:clang --clang.exe="zigcc" --clang.linkerexe="zigcc" --passc:"-target aarch64-windows-gnu" --passl:"-target aarch64-windows-gnu" --forceBuild:on --os:windows --cpu:arm64 -d:windows -d:strip -d:release --out:dist/refractor.exe src/refractor.nim
+          cp lib/focalizer-arm64.dll dist/focalizer.dll
+          zip -j dist/refractor_windows_arm64.zip dist/refractor.exe dist/focalizer.dll
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: refractor_windows_arm64.zip
+          path: dist/refractor_windows_arm64.zip

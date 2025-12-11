@@ -1,0 +1,70 @@
+name: 'macOS v1.1.0'
+
+on:
+  workflow_call:
+    inputs:
+      TAG:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      TAG:
+        default: 'testing'
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build for macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache Nim installation
+        id: nim-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nimble
+            ~/.choosenim
+            bin/nim
+            bin/nimsuggest
+            bin/nimpretty
+            bin/testament
+            bin/nimgrep
+            bin/nim_dbg
+            bin/nimble
+            bin/atlas
+          key: nim-${{ runner.os }}-2.2.4
+
+      - name: Set up Nim
+        uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: '2.2.4'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Dependencies
+        run: |
+          nimble install -y zippy
+          rm -rf dist/*
+          mkdir -p dist
+          mkdir -p dist/lib
+
+      - name: Compile and package
+        run: |
+          nim c -d:macos -d:strip -d:release --out:refractor-arm64 src/refractor.nim
+          nim c -d:macos -d:strip -d:release -d:zippyNoSimd -l:'-target x86_64-apple-macosx10.13' -t:'-target x86_64-apple-macosx10.13' --out:refractor-x86_64 src/refractor.nim
+          lipo -create -output dist/refractor refractor-x86_64 refractor-arm64
+          cp lib/libfocalizer.dylib dist/libfocalizer.dylib
+          chmod +x dist/refractor
+          xattr -c dist/refractor
+          chmod +x dist/libfocalizer.dylib
+          xattr -c dist/libfocalizer.dylib
+          tar -czvf dist/refractor_macos.tar.gz -C dist refractor libfocalizer.dylib
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: refractor_macos.tar.gz
+          path: dist/refractor_macos.tar.gz
