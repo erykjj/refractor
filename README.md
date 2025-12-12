@@ -12,7 +12,6 @@ II Chronicles 2:3 --> 2Ch 2:3
 1-Cor 1:11 --> 1Co 1:11
 1st Peter 1:1 --> 1Pe 1:1
 1.John 5:3 --> 1Jo 5:3
-2nd Peter 2:2 --> 2Pe 2:2
 ```
 
 You will get a list that you can paste into the search box on [*Watchtower ONLINE LIBRARY*](https://wol.jw.org)[^#], or a link to see your results directly.
