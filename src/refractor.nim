@@ -1,7 +1,7 @@
 const
   App = "refractor"
   Copyright = "© 2025 Eryk J."
-  Version = "1.0.0"
+  Version = "1.1.0"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
     You may use and modify this code for personal, non-commercial purposes only.
@@ -27,9 +27,9 @@ else: # linux
 
 type
   ExtractionResults = object
-    scriptures: seq[string]
-    publications: seq[string]
-    allInOrder: seq[string]
+    scriptures: seq[(string, string, string)]
+    publications: seq[(string, string, string)]
+    allInOrder: seq[(string, string, string)]
 
   FocalizerPacket = object
     version: string
@@ -89,13 +89,17 @@ proc convertRefs(refList: seq[string]): string =
     encoded.add(encodeForUrl(reference))
   result = encoded.join(";")
 
-proc output(results: seq[string]) = 
+proc output(results: seq[(string, string, string)]) = 
   let url = constructUrl()
   var chunks: seq[seq[string]] = @[]
   var currentChunk: seq[string] = @[]
   var currentLength = 0
-
-  for r in results:
+  for (source, alt, extra) in results:
+    var r = ""
+    if alt.len > 0:
+      r = (alt & " " & extra).strip
+    else:
+      r = (source & " " & extra).strip
     let rLen = r.len
     let additionalLength = if currentLength == 0: rLen else: rLen + 2
     if currentLength + additionalLength > 255 and currentChunk.len > 0:
@@ -108,7 +112,7 @@ proc output(results: seq[string]) =
 
   if currentChunk.len > 0:
     chunks.add(currentChunk)
-  stdout.styledWriteLine("\nYou can paste these into the search box on ", fgBlue, &"https://wol.jw.org/{lang}:")
+  stdout.styledWriteLine("You can paste these into the search box on ", fgBlue, &"https://wol.jw.org/{lang}:")
   for i, chunk in chunks:
     styledEcho fgGreen, "\n" & chunk.join("; ")
   echo "\nOr use the link(s) to open wol.jw.org directly:"
@@ -135,11 +139,11 @@ proc main(showScripts, showRefs: bool) =
       output(results.allInOrder)
   else:
     if showScripts:
-      styledEcho fgYellow, $results.scriptures.len & " scripture(s) found"
+      styledEcho fgYellow, $results.scriptures.len & " scripture(s) found\n"
       if results.scriptures.len > 0:
         output(results.scriptures)
     if showRefs:
-      styledEcho fgYellow, $results.publications.len & " publication reference(s) found"
+      styledEcho fgYellow, $results.publications.len & " publication reference(s) found\n"
       if results.publications.len > 0:
         output(results.publications)
 
