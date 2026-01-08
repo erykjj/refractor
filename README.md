@@ -35,7 +35,7 @@ You will get a list that you can paste into the search box on [*Watchtower ONLIN
    -h, --help                      Show this help message and exit
    -v, --version                   Show the version and exit
 
-   -c:<code>, --code=<code>        Language code (en by default)
+   -c:<code>, --code=<code>        Language code or symbol (en by default)
    -l, --list                      List supported languages
 
    -r, --references                Output publication references
@@ -47,7 +47,7 @@ You will get a list that you can paste into the search box on [*Watchtower ONLIN
 
 ## Examples
 
-Linux/macOS: `./refractor -c:es bosquejo.docx`
+Linux/macOS: `./refractor -c:S bosquejo.docx`
 
 Windows: `refractor.exe -c:en talk_outline.txt`
 
