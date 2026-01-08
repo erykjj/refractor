@@ -160,7 +160,7 @@ when isMainModule:
         -h, --help                      Show this help message and exit
         -v, --version                   Show the version and exit
 
-        -c:<code>, --code=<code>        Language code (en by default)
+        -c:<code>, --code=<code>        Language code or symbol (en by default)
         -l, --list                      List supported languages
 
         -r, --references                Output publication references
