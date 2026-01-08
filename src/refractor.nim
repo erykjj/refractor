@@ -1,7 +1,7 @@
 const
   App = "refractor"
   Copyright = "© 2025 Eryk J."
-  Version = "1.1.0"
+  Version = "1.2.0"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
     You may use and modify this code for personal, non-commercial purposes only.
@@ -9,7 +9,7 @@ const
     See LICENSE for full terms.                                              ]#
 
 import
-  std/[marshal, os, parseopt, strformat, strutils, tables, terminal, uri, xmlparser, xmltree],
+  std/[marshal, os, parseopt, strformat, strutils, tables, terminal, unicode, uri, xmlparser, xmltree],
   zippy/ziparchives
 
 when defined(windows):
@@ -33,9 +33,11 @@ type
 
   FocalizerPacket = object
     version: string
+    languageId: int
+    languageCode: string
     searchPath: string
-    scriptureLangs: OrderedTable[string, string]
-    publicationLangs: OrderedTable[string, string]
+    scriptureLangs: OrderedTable[string, (string, string, string)]
+    publicationLangs: OrderedTable[string, (string, string, string)]
 
 var
   lang = "en"
@@ -200,7 +202,8 @@ when isMainModule:
       discard
 
   let serializedPacket = init(lang.cstring)
-  pkt = to[FocalizerPacket]($serializedPacket)
+  pkt = to[FocalizerPacket]($serializedPacket) # language and book data
+  lang = pkt.languageCode
 
   if showHelp:
     stdout.styledWriteLine(fgBlue, &"\n {App} ", fgGreen, "REFERENCE EXTRACTOR ", fgDefault, "for publications of Jehovah's Witnesses")
@@ -215,13 +218,18 @@ when isMainModule:
 
   if showList:
     stdout.styledWriteLine(fgBlue, &"\n Supported scripture languages ({$len(pkt.scriptureLangs)}):")
-    for code, name in pkt.scriptureLangs:
-      let dots = ".".repeat(max(0, 25 - name.len))
-      stdout.styledWriteLine(&"  {name} {dots} ", fgGreen, &"{code}")
+    for code, names in pkt.scriptureLangs:
+      var (symbol, name, vernacular) = names
+      let width = name.len
+      let dots = ".".repeat(max(0, 24 - width))
+      stdout.styledWriteLine(&"  {name} {dots} ", fgGreen, &"{code} ({symbol})")
+
     stdout.styledWriteLine(fgBlue, &"\n Supported publication languages ({$len(pkt.publicationLangs)}):")
-    for code, name in pkt.publicationLangs:
-      let dots = ".".repeat(max(0, 25 - name.len))
-      stdout.styledWriteLine(&"  {name} {dots} ", fgGreen, &"{code}")
+    for code, names in pkt.publicationLangs:
+      var (symbol,name, vernacular) = names
+      let width = name.len
+      let dots = ".".repeat(max(0, 24 - width))
+      stdout.styledWriteLine(&"  {name} {dots} ", fgGreen, &"{code} ({symbol})")
     quit(0)
 
   if inputFile == "":
