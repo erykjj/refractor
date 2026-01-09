@@ -6,6 +6,8 @@
 
 ### Changed
 
+- Show vernacular language name in list
+
 ### Fixed
 
 ### Removed
