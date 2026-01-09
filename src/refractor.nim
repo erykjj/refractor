@@ -1,7 +1,7 @@
 const
   App = "refractor"
   Copyright = "© 2025 Eryk J."
-  Version = "1.2.0"
+  Version = "1.2.1"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
     You may use and modify this code for personal, non-commercial purposes only.
@@ -128,6 +128,17 @@ proc output(results: seq[(string, string, string)]) =
       stdout.styledWriteLine(fgGreen, &"{r}", fgDefault, " --> ", fgBlue, url & encoded)
     echo ""
 
+proc languageList(list: OrderedTable[string, (string, string, string)]) =
+  for code, names in list:
+    var (symbol, name, vernacular) = names
+    if name != vernacular:
+      name = name & " – " & vernacular
+    stdout.write("  " & name)
+    stdout.setCursorXPos(45)
+    stdout.styledWrite(fgGreen, code)
+    stdout.setCursorXPos(49)
+    stdout.styledWriteLine(fgGreen, symbol)
+
 proc main(showScripts, showRefs: bool) =
   let source = readSource(inputFile)
   if source == "":
@@ -218,18 +229,9 @@ when isMainModule:
 
   if showList:
     stdout.styledWriteLine(fgBlue, &"\n Supported scripture languages ({$len(pkt.scriptureLangs)}):")
-    for code, names in pkt.scriptureLangs:
-      var (symbol, name, vernacular) = names
-      let width = name.len
-      let dots = ".".repeat(max(0, 24 - width))
-      stdout.styledWriteLine(&"  {name} {dots} ", fgGreen, &"{code} ({symbol})")
-
+    languageList(pkt.scriptureLangs)
     stdout.styledWriteLine(fgBlue, &"\n Supported publication languages ({$len(pkt.publicationLangs)}):")
-    for code, names in pkt.publicationLangs:
-      var (symbol,name, vernacular) = names
-      let width = name.len
-      let dots = ".".repeat(max(0, 24 - width))
-      stdout.styledWriteLine(&"  {name} {dots} ", fgGreen, &"{code} ({symbol})")
+    languageList(pkt.publicationLangs)
     quit(0)
 
   if inputFile == "":
