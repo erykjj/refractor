@@ -1,7 +1,7 @@
 const
   App = "refractor"
   Copyright = "© 2025 Eryk J."
-  Version = "1.2.1"
+  Version = "1.3.0"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
     You may use and modify this code for personal, non-commercial purposes only.
@@ -132,12 +132,12 @@ proc output(results: seq[(string, string, string)]) =
 proc languageList(list: OrderedTable[string, (string, string, string)]) =
   var t = tabulator.newTable()
   t.addColumn(width=24)
+  t.addColumn(width=24)
   t.addColumn(width=5)
   t.addColumn(width=5)
-  t.addColumn()
   for code, names in list:
     var (symbol, name, vernacular) = names
-    t.addRow(@[" " & name, &"\e[32m{code}\e[0m", &"\e[32m{symbol}\e[0m", vernacular])
+    t.addRow(@[" " & name, vernacular, &"\e[32m{code}\e[0m", &"\e[32m{symbol}\e[0m"])
   t.renderTable(separator=false)
 
 proc main(showScripts, showRefs: bool) =
