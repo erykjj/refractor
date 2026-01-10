@@ -10,6 +10,7 @@ const
 
 import
   std/[marshal, os, parseopt, strformat, strutils, tables, terminal, unicode, uri, xmlparser, xmltree],
+  tabulator,
   zippy/ziparchives
 
 when defined(windows):
@@ -129,15 +130,15 @@ proc output(results: seq[(string, string, string)]) =
     echo ""
 
 proc languageList(list: OrderedTable[string, (string, string, string)]) =
+  var t = tabulator.newTable()
+  t.addColumn(width=24)
+  t.addColumn(width=5)
+  t.addColumn(width=5)
+  t.addColumn()
   for code, names in list:
     var (symbol, name, vernacular) = names
-    if name != vernacular:
-      name = name & " – " & vernacular
-    stdout.write("  " & name)
-    stdout.setCursorXPos(45)
-    stdout.styledWrite(fgGreen, code)
-    stdout.setCursorXPos(49)
-    stdout.styledWriteLine(fgGreen, symbol)
+    t.addRow(@[" " & name, &"\e[32m{code}\e[0m", &"\e[32m{symbol}\e[0m", vernacular])
+  t.renderTable(separator=false)
 
 proc main(showScripts, showRefs: bool) =
   let source = readSource(inputFile)
