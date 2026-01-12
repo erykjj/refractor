@@ -7,6 +7,8 @@
 ### Changed
 
 - Show vernacular language name in list
+- Validate if chapter in range
+  - a bit more "precise" for excluding false-positives
 
 ### Fixed
 
