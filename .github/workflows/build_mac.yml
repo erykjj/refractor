@@ -1,4 +1,4 @@
-name: 'macOS v1.1.0'
+name: 'macOS v1.1.1'
 
 on:
   workflow_call:
@@ -47,6 +47,7 @@ jobs:
       - name: Install Dependencies
         run: |
           nimble install -y zippy
+          nimble install -y tabulator
           rm -rf dist/*
           mkdir -p dist
           mkdir -p dist/lib
