@@ -1,7 +1,7 @@
 const
   App = "refractor"
   Copyright = "© 2025 Eryk J."
-  Version = "1.3.0"
+  Version = "2.0.0"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
     You may use and modify this code for personal, non-commercial purposes only.
@@ -28,9 +28,8 @@ else: # linux
 
 type
   ExtractionResults = object
-    scriptures: seq[(string, string, string)]
-    publications: seq[(string, string, string)]
-    allInOrder: seq[(string, string, string)]
+    scriptures: seq[(string, string, string, string)]
+    publications: seq[string]
 
   FocalizerPacket = object
     version: string
@@ -45,7 +44,7 @@ var
   inputFile = ""
   pkt: FocalizerPacket
 
-proc init(languageCode: cstring): cstring {.cdecl, dynlib: libName, importc.}
+proc init(languageCode, nameFormat: cstring): cstring {.cdecl, dynlib: libName, importc.}
 proc extractAll(text: cstring): cstring {.cdecl, dynlib: libName, importc.}
 
 
@@ -92,17 +91,12 @@ proc convertRefs(refList: seq[string]): string =
     encoded.add(encodeForUrl(reference))
   result = encoded.join(";")
 
-proc output(results: seq[(string, string, string)]) = 
-  let url = constructUrl()
+proc createChunks[T](items: seq[T], extractor: proc(item: T): string): seq[seq[string]] =
   var chunks: seq[seq[string]] = @[]
   var currentChunk: seq[string] = @[]
   var currentLength = 0
-  for (source, alt, extra) in results:
-    var r = ""
-    if alt.len > 0:
-      r = (alt & " " & extra).strip
-    else:
-      r = (source & " " & extra).strip
+  for item in items:
+    let r = extractor(item)
     let rLen = r.len
     let additionalLength = if currentLength == 0: rLen else: rLen + 2
     if currentLength + additionalLength > 255 and currentChunk.len > 0:
@@ -112,22 +106,67 @@ proc output(results: seq[(string, string, string)]) =
     else:
       currentChunk.add(r)
       currentLength += additionalLength
-
   if currentChunk.len > 0:
     chunks.add(currentChunk)
+  return chunks
+
+proc outputChunks(chunks: seq[seq[string]], url: string) =
   stdout.styledWriteLine("You can paste these into the search box on ", fgBlue, &"https://wol.jw.org/{lang}:")
-  for i, chunk in chunks:
+  for chunk in chunks:
     styledEcho fgGreen, "\n" & chunk.join("; ")
   echo "\nOr use the link(s) to open wol.jw.org directly:"
-  for i, chunk in chunks:
+  for chunk in chunks:
     let combinedLinks = convertRefs(chunk)
     styledEcho fgBlue, "\n" & url & combinedLinks
+
+proc outputPublicationLinks(items: seq[string], url: string) =
   echo "\nOr use these individual links:\n"
-  for i, chunk in chunks:
-    for r in chunk:
-      let encoded = encodeForUrl(r)
-      stdout.styledWriteLine(fgGreen, &"{r}", fgDefault, " --> ", fgBlue, url & encoded)
-    echo ""
+  for r in items:
+    let encoded = encodeForUrl(r.strip)
+    stdout.styledWriteLine(fgGreen, &"{r.strip}", fgDefault, " --> ", fgBlue, url & encoded)
+  echo ""
+
+proc outputScriptureLinks(results: seq[(string, string, string, string)], url: string) =
+  echo "\nOr use these individual links:\n"
+  for item in results:
+    let (_, alt, official, extra) = item
+    var r = (alt & " " & extra).strip
+    let encoded = encodeForUrl((official & " " & extra).strip)
+    stdout.styledWriteLine(fgGreen, &"{r}", fgDefault, " --> ", fgBlue, url & encoded)
+  echo ""
+
+proc outputScriptures(results: seq[(string, string, string, string)]) =
+
+  proc extractAlt(item: (string, string, string, string)): string =
+    let (_, alt, _, extra) = item
+    (alt & " " & extra).strip
+
+  proc extractOfficial(item: (string, string, string, string)): string =
+    let (_, _, official, extra) = item
+    (official & " " & extra).strip
+
+  let url = constructUrl()
+  let searchChunks = createChunks(results, extractAlt)
+  stdout.styledWriteLine("You can paste these into the search box on ", fgBlue, &"https://wol.jw.org/{lang}:")
+  for chunk in searchChunks:
+    styledEcho fgGreen, "\n" & chunk.join("; ")
+  
+  echo "\nOr use the link(s) to open wol.jw.org directly:"
+  let urlChunks = createChunks(results, extractOfficial)
+  for chunk in urlChunks:
+    let combinedLinks = convertRefs(chunk)
+    styledEcho fgBlue, "\n" & url & combinedLinks
+  
+  outputScriptureLinks(results, url)
+
+proc outputPublications(results: seq[string]) =
+
+  proc extract(item: string): string = item.strip
+
+  let url = constructUrl()
+  let chunks = createChunks(results, extract)
+  outputChunks(chunks, url)
+  outputPublicationLinks(results, url)
 
 proc languageList(list: OrderedTable[string, (string, string, string)]) =
   var t = tabulator.newTable()
@@ -147,26 +186,23 @@ proc main(showScripts, showRefs: bool) =
     return
   let serializedResults = extractAll(source.cstring)
   let results = to[ExtractionResults]($serializedResults)
-  if not showRefs and not showScripts:
-    styledEcho fgYellow, $results.allInOrder.len & " reference(s) found"
-    if results.allInOrder.len > 0:
-      output(results.allInOrder)
-  else:
-    if showScripts:
-      styledEcho fgYellow, $results.scriptures.len & " scripture(s) found\n"
-      if results.scriptures.len > 0:
-        output(results.scriptures)
-    if showRefs:
-      styledEcho fgYellow, $results.publications.len & " publication reference(s) found\n"
-      if results.publications.len > 0:
-        output(results.publications)
+  if showScripts:
+    echo ""
+    styledEcho fgYellow, $results.scriptures.len & " SCRIPTURE(S) FOUND\n"
+    if results.scriptures.len > 0:
+      outputScriptures(results.scriptures)
+  if showRefs:
+    echo ""
+    styledEcho fgYellow, $results.publications.len & " PUBLICATION REFERENCE(S) FOUND\n"
+    if results.publications.len > 0:
+      outputPublications(results.publications)
 
 when isMainModule:
   let
     appName = getAppFilename().split(sep)[^1]
     appHelp = unindent(&"""
 
-      Usage: {appName} [-h | -v | -l] | [-r] [-s] -c:code <infile>
+      Usage: {appName} [-h | -v | -l] | [-r] [-s] [--full | --standard | --official] -c:code <infile>
 
       Options:
         -h, --help                      Show this help message and exit
@@ -176,8 +212,13 @@ when isMainModule:
         -l, --list                      List supported languages
 
         -r, --references                Output publication references
-        -s, --scriptures                Output scriptures (if neither -r or
-                                          -s is provided, both are enabled)
+        -s, --scriptures                Output scriptures (if neither -r nor -s
+                                          is provided, both shown)
+
+      Scripture (book names) rewrite options:
+        --full                          Use full name
+        --standard                      Use standard name
+        --official                      Use official name (default)
 
       <infile>                          File to process (docx or text)
       """, 5, " ")
@@ -188,6 +229,7 @@ when isMainModule:
     isError = false
     showScripts = false
     showRefs = false
+    nameFormat = "official"
 
   for kind, key, val in getOpt():
     case kind
@@ -207,13 +249,18 @@ when isMainModule:
         showVersion = true
       of "list", "l":
         showList = true
+      of "standard":
+        nameFormat = "standard"
+      of "full":
+        nameFormat = "full"
+      of "official":
+        nameFormat = "official"
       else:
-        styledEcho fgRed, &"\n Error: Unknown option '{key}'"
         isError = true
     of cmdEnd:
       discard
 
-  let serializedPacket = init(lang.cstring)
+  let serializedPacket = init(lang.cstring, nameFormat.cstring)
   pkt = to[FocalizerPacket]($serializedPacket) # language and book data
   lang = pkt.languageCode
 
@@ -228,19 +275,19 @@ when isMainModule:
     echo &"  {Copyright}\n"
     quit(0)
 
-  if showList:
-    stdout.styledWriteLine(fgBlue, &"\n Supported scripture languages ({$len(pkt.scriptureLangs)}):")
-    languageList(pkt.scriptureLangs)
-    stdout.styledWriteLine(fgBlue, &"\n Supported publication languages ({$len(pkt.publicationLangs)}):")
-    languageList(pkt.publicationLangs)
-    quit(0)
-
   if inputFile == "":
     styledEcho fgRed, " Error: provide an input/source file"
     isError = true
 
   if isError:
     echo &"\n See '{appName} -h' for help.\n"
+    quit(0)
+
+  if showList:
+    stdout.styledWriteLine(fgBlue, &"\n Supported scripture languages ({$len(pkt.scriptureLangs)}):")
+    languageList(pkt.scriptureLangs)
+    stdout.styledWriteLine(fgBlue, &"\n Supported publication languages ({$len(pkt.publicationLangs)}):")
+    languageList(pkt.publicationLangs)
     quit(0)
 
   if showScripts or showRefs:
