@@ -15,6 +15,8 @@
 
 ### Fixed
 
+- Fixed wrong commandline argument handling
+
 ### Removed
 
 ____
