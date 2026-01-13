@@ -4,11 +4,14 @@
 
 ### Added
 
+- *Rewrite scriptures* (book names) in full, standard or official format
+
 ### Changed
 
 - Show vernacular language name in list
 - Validate if chapter in range
   - a bit more "precise" for excluding false-positives
+- Updated focalizer to v1.3.0
 
 ### Fixed
 
