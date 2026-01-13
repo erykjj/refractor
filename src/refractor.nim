@@ -1,6 +1,6 @@
 const
   App = "refractor"
-  Copyright = "© 2025 Eryk J."
+  Copyright = "© 2026 Eryk J."
   Version = "2.0.0"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
