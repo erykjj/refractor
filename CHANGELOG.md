@@ -4,6 +4,16 @@
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+____
+## [v2.0.0] - 2026-01-12
+### Added
+
 - *Rewrite scriptures* (book names) in full, standard or official format
 
 ### Changed
@@ -17,9 +27,6 @@
 
 - Fixed wrong commandline argument handling
 
-### Removed
-
-____
 ## [v1.2.0] - 2026-01-07
 ### Added
 
@@ -46,6 +53,7 @@ ____
 - Initial release
 
 ____
+[v2.0.0]:https://github.com/erykjj/refractor/releases/tag/v2.0.0
 [v1.2.0]:https://github.com/erykjj/refractor/releases/tag/v1.2.0
 [v1.1.0]:https://github.com/erykjj/refractor/releases/tag/v1.1.0
 [v1.0.0]:https://github.com/erykjj/refractor/releases/tag/v1.0.0
