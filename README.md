@@ -6,7 +6,7 @@ Commandline/terminal **reference extractor** utility that finds scriptures and p
 
 Publication references are only parsed within `()` and `[]`.
 
-Scripture references only include the ones with verses (not whole chapters or books), and they will be "cleaned up" (rewritten in official format):
+Scripture references only include the ones with verses (not whole chapters or books), and they will be "cleaned up" (rewritten in selected format):
 ```
 II Chronicles 2:3 --> 2Ch 2:3
 1-Cor 1:11 --> 1Co 1:11
@@ -29,20 +29,25 @@ You will get a list that you can paste into the search box on [*Watchtower ONLIN
 ## Usage
 
 ```
- Usage: refractor [-h | -v | -l] | [-r] [-s] -c:code <infile>
+Usage: {appName} [-h | -v | -l] | [-r] [-s] [--full | --standard | --official] -c:code <infile>
 
- Options:
-   -h, --help                      Show this help message and exit
-   -v, --version                   Show the version and exit
+Options:
+  -h, --help                      Show this help message and exit
+  -v, --version                   Show the version and exit
 
-   -c:<code>, --code=<code>        Language code or symbol (en by default)
-   -l, --list                      List supported languages
+  -c:<code>, --code=<code>        Language code or symbol (en by default)
+  -l, --list                      List supported languages
 
-   -r, --references                Output publication references
-   -s, --scriptures                Output scriptures (if neither -r or
-                                     -s is provided, both are enabled)
+  -r, --references                Output publication references
+  -s, --scriptures                Output scriptures (if neither -r nor -s
+                                    is provided, both shown)
 
- <infile>                          File to process (docx or text)
+Scripture (book names) rewrite options:
+  --full                          Use full name
+  --standard                      Use standard name
+  --official                      Use official name (default)
+
+<infile>                          File to process (docx or text)
 ```
 
 ## Examples
