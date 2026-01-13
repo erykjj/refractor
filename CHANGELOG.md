@@ -11,7 +11,7 @@
 - Show vernacular language name in list
 - Validate if chapter in range
   - a bit more "precise" for excluding false-positives
-- Updated focalizer to v1.3.0
+- Updated focalizer to v1.3.1
 
 ### Fixed
 
