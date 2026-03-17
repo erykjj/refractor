@@ -59,8 +59,6 @@ Windows: `refractor.exe -c:en talk_outline.txt`
 ____
 [![Static Badge](https://img.shields.io/badge/releases-orange?style=plastic&logo=rss&logoColor=orange&color=black)](https://github.com/erykjj/refractor/releases.atom)
 
-By using this software you agree to abide by the terms of its [License](https://github.com/erykjj/refractor#License-1-ov-file).
-
 Feel free to get in touch and post any [issues and/or suggestions](https://github.com/erykjj/refractor/issues).
 
 ____
