@@ -1,7 +1,7 @@
 const
   App = "refractor"
   Copyright = "© 2026 Eryk J."
-  Version = "2.0.0"
+  Version = "2.1.0"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
     You may use and modify this code for personal, non-commercial purposes only.
@@ -312,4 +312,12 @@ when isMainModule:
   try:
     main(showScripts, showRefs)
   finally:
+    when defined(windows):
+      if paramCount() > 0:
+        styledEcho fgYellow, "\nPress any key to terminate..."
+        discard system.cstdin.readChar()
+    else:
+      if paramCount() > 0:
+        styledEcho fgYellow, "\nPress Enter to terminate..."
+        discard readLine(stdin)
     quit(0)
