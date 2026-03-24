@@ -11,6 +11,17 @@
 ### Removed
 
 ____
+## [v3.0.0] - 2026-03-24
+### Added
+
+- Configuration file
+  - set your default language code and book name format
+- Output to HTML file
+
+### Changed
+
+- Updated focalizer to v2.0.0
+
 ## [v2.0.0] - 2026-01-12
 ### Added
 
@@ -53,6 +64,7 @@ ____
 - Initial release
 
 ____
+[v3.0.0]:https://github.com/erykjj/refractor/releases/tag/v3.0.0
 [v2.0.0]:https://github.com/erykjj/refractor/releases/tag/v2.0.0
 [v1.2.0]:https://github.com/erykjj/refractor/releases/tag/v1.2.0
 [v1.1.0]:https://github.com/erykjj/refractor/releases/tag/v1.1.0
