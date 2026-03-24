@@ -1,8 +1,10 @@
-<img src="res/prism.png" width=100%>
+<img src="res/prism.png" width=40%>
 
 # refractor
 
 Commandline/terminal **reference extractor** utility that finds scriptures and publication references[^*]. Works with both text files and *.docx* (MS Word) documents. Multiple languages are supported.
+
+You can set your default language code and Bible book format in a `refractor.conf` file alongside the binary.
 
 Publication references are only parsed within `()` and `[]`.
 
@@ -14,7 +16,7 @@ II Chronicles 2:3 --> 2Ch 2:3
 1.John 5:3 --> 1Jo 5:3
 ```
 
-You will get a list that you can paste into the search box on [*Watchtower ONLINE LIBRARY*](https://wol.jw.org)[^#], or a link to see your results directly.
+You will get a list that you can paste into the search box on [*Watchtower ONLINE LIBRARY*](https://wol.jw.org)[^#], or a link to see your results directly. A `refractor_output.html` file is generated in the directory where the binary is located.
 
 ## Downloads
 
