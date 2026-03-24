@@ -80,6 +80,7 @@ proc readSource(filePath: string): string =
   except IOError, OSError:
     result = ""
 
+
 proc constructUrl(): string =
   if pkt.searchPath == "":
     return ""
@@ -174,6 +175,7 @@ proc outputPublications(results: seq[string]) =
   let chunks = createChunks(results, extract)
   outputChunks(chunks, url)
   outputPublicationLinks(results, url)
+
 
 proc languageList(list: OrderedTable[string, (string, string, string)]) =
   var t = tabulator.newTable()
