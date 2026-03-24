@@ -1,4 +1,4 @@
-name: 'macOS v1.1.1'
+name: 'macOS v1.2.0'
 
 on:
   workflow_call:
@@ -19,11 +19,11 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Cache Nim installation
         id: nim-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.nimble
@@ -65,7 +65,7 @@ jobs:
           tar -czvf dist/refractor_macos.tar.gz -C dist refractor libfocalizer.dylib
 
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: refractor_macos.tar.gz
           path: dist/refractor_macos.tar.gz
