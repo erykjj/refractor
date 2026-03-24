@@ -1,7 +1,7 @@
 const
   App = "refractor"
   Copyright = "© 2026 Eryk J."
-  Version = "2.1.0"
+  Version = "3.0.0"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
     You may use and modify this code for personal, non-commercial purposes only.
@@ -177,6 +177,79 @@ proc outputPublications(results: seq[string]) =
   outputPublicationLinks(results, url)
 
 
+proc generateHtmlOutput(results: ExtractionResults, showScripts, showRefs: bool) =
+  let htmlPath = getAppDir() / "refractor_output.html"
+  let url = constructUrl()
+  var html = unindent("""
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>refractor output</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 2rem; line-height: 1.6; }
+          h1 { color: #333; border-bottom: 2px solid #ddd; padding-bottom: 0.5rem; }
+          h2 { color: #666; margin-top: 2rem; }
+          hr { border: none; border-top: 1px solid #ddd; margin: 2rem 0; }
+          .instruction { color: #666; margin: 1rem 0; }
+          .chunk { display: block; margin: 0.75rem 0; padding: 0.75rem; background: #f5f5f5; border-left: 4px solid #496DA7; font-family: monospace; }
+          a { color: #496DA7; text-decoration: none; }
+          a:hover { text-decoration: underline; }
+          .individual-links { margin-top: 1rem; }
+          .individual-links a { display: inline-block; margin: 0.25rem 0.5rem; padding: 0.25rem 0.5rem; background: #f0f0f0; color: #496DA7; text-decoration: none; border-radius: 3px; }
+          .individual-links a:hover { background: #e0e0e0; text-decoration: underline; }
+        </style>
+      </head>
+      <body>
+  """, 4, " ")
+  html.add("    <h1>refractor output</h1>\n")
+
+  # Scriptures section
+  if showScripts and results.scriptures.len > 0:
+    html.add(&"    <h2>Scripture references ({results.scriptures.len})</h2>\n")
+    html.add(&"    <div class='instruction'>Grouped search on <a href='https://wol.jw.org/{lang}/' target='_blank'>wol.jw.org</a>:</div>\n")
+    let extractOfficial = proc(item: (string, string, string, string)): string =
+      let (_, _, official, extra) = item
+      (official & " " & extra).strip
+    let urlChunks = createChunks(results.scriptures, extractOfficial)
+    for chunk in urlChunks:
+      let combinedLinks = convertRefs(chunk)
+      let fullUrl = url & combinedLinks
+      html.add(&"    <div class='chunk'><a href='{fullUrl}' target='_blank'>{chunk.join(\"; \")}</a></div>\n")
+    html.add("    <div class='individual-links'>\n")
+    html.add("      <div class='instruction'>Individual links:</div>\n")
+    for item in results.scriptures:
+      let (_, alt, official, extra) = item
+      let encoded = encodeForUrl((official & " " & extra).strip)
+      let fullUrl = url & encoded
+      html.add(&"      <a href='{fullUrl}' target='_blank'>{alt} {extra}</a>\n")
+    html.add("    </div>\n")
+
+  # Publications section
+  if showRefs and results.publications.len > 0:
+    html.add("    <hr />\n")
+    html.add(&"    <h2>Publication references ({results.publications.len})</h2>\n")
+    html.add(&"    <div class='instruction'>Grouped search on <a href='https://wol.jw.org/{lang}/' target='_blank'>wol.jw.org</a>:</div>\n")
+    let extract = proc(item: string): string = item.strip
+    let chunks = createChunks(results.publications, extract)
+    for chunk in chunks:
+      let combinedLinks = convertRefs(chunk)
+      let fullUrl = url & combinedLinks
+      html.add(&"    <div class='chunk'><a href='{fullUrl}' target='_blank'>{chunk.join(\"; \")}</a></div>\n")
+    html.add("    <div class='individual-links'>\n")
+    html.add("      <div class='instruction'>Individual links:</div>\n")
+    for item in results.publications:
+      let encoded = encodeForUrl(item.strip)
+      let fullUrl = url & encoded
+      html.add(&"      <a href='{fullUrl}' target='_blank'>{item.strip}</a>\n")
+    html.add("    </div>\n")
+  html.add("  </body>\n</html>\n")
+  try:
+    writeFile(htmlPath, html)
+  except:
+    styledEcho fgYellow, &"\n Warning: Could not write HTML output to {htmlPath}\n"
+
+
 proc languageList(list: OrderedTable[string, (string, string, string)]) =
   var t = tabulator.newTable()
   t.addColumn(width=22)
@@ -253,7 +326,7 @@ proc loadConfig(): Config =
     styledEcho fgYellow, &"\n Warning: Could not parse config file '{configPath}'\n Using defaults\n"
     return
 
-proc main(showScripts, showRefs: bool) =
+proc main(showScripts, showRefs: bool): ExtractionResults =
   let source = readSource(inputFile)
   if source == "":
     styledEcho fgRed, "\n Error: Could not read input file or file is empty"
@@ -270,6 +343,8 @@ proc main(showScripts, showRefs: bool) =
     styledEcho fgYellow, $results.publications.len & " PUBLICATION REFERENCE(S) FOUND\n"
     if results.publications.len > 0:
       outputPublications(results.publications)
+  return results
+
 
 when isMainModule:
   let
@@ -391,14 +466,7 @@ when isMainModule:
       quit(0)
 
   try:
-    main(showScripts, showRefs)
+    let results = main(showScripts, showRefs)
+    generateHtmlOutput(results, showScripts, showRefs)
   finally:
-    when defined(windows):
-      if paramCount() > 0:
-        styledEcho fgYellow, "\nPress any key to terminate..."
-        discard system.cstdin.readChar()
-    else:
-      if paramCount() > 0:
-        styledEcho fgYellow, "\nPress Enter to terminate..."
-        discard readLine(stdin)
     quit(0)
