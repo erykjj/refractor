@@ -139,6 +139,7 @@ proc outputScriptureLinks(results: seq[(string, string, string, string)], url: s
   for item in results:
     let (_, alt, official, extra) = item
     var r = (alt & " " & extra).strip
+    r = r.replace(";", "; ")
     let encoded = encodeForUrl((official & " " & extra).strip)
     stdout.styledWriteLine(fgGreen, &"{r}", fgDefault, " --> ", fgBlue, url & encoded)
   echo ""
@@ -180,7 +181,6 @@ proc outputPublications(results: seq[string]) =
 proc generateHtmlOutput(results: ExtractionResults, showScripts, showRefs: bool) =
   let htmlPath = getAppDir() / "refractor_output.html"
   let url = constructUrl()
-  
   var html = unindent("""
     <!DOCTYPE html>
     <html>
@@ -203,50 +203,42 @@ proc generateHtmlOutput(results: ExtractionResults, showScripts, showRefs: bool)
       </head>
       <body>
   """, 4, " ")
-  
   html.add("    <h1>refractor output</h1>\n")
-  
+
   # Scriptures section
   if showScripts and results.scriptures.len > 0:
     html.add(&"    <h2>Scripture references ({results.scriptures.len})</h2>\n")
     html.add(&"    <div class='instruction'>Grouped search on <a href='https://wol.jw.org/{lang}/' target='_blank'>wol.jw.org</a>:</div>\n")
-    
-    # Chunks as clickable links
     let extractOfficial = proc(item: (string, string, string, string)): string =
       let (_, _, official, extra) = item
       (official & " " & extra).strip
-    
     let urlChunks = createChunks(results.scriptures, extractOfficial)
     for chunk in urlChunks:
       let combinedLinks = convertRefs(chunk)
       let fullUrl = url & combinedLinks
       html.add(&"    <div class='chunk'><a href='{fullUrl}' target='_blank'>{chunk.join(\"; \")}</a></div>\n")
-    
-    # Individual links
     html.add("    <div class='individual-links'>\n")
     html.add("      <div class='instruction'>Individual links:</div>\n")
     for item in results.scriptures:
       let (_, alt, official, extra) = item
+      var displayText = (alt & " " & extra).strip
+      displayText = displayText.replace(";", "; ")
       let encoded = encodeForUrl((official & " " & extra).strip)
       let fullUrl = url & encoded
-      html.add(&"      <a href='{fullUrl}' target='_blank'>{alt} {extra}</a>\n")
+      html.add(&"      <a href='{fullUrl}' target='_blank'>{displayText}</a>\n")
     html.add("    </div>\n")
-  
+
   # Publications section
   if showRefs and results.publications.len > 0:
     html.add("    <hr />\n")
     html.add(&"    <h2>Publication references ({results.publications.len})</h2>\n")
     html.add(&"    <div class='instruction'>Grouped search on <a href='https://wol.jw.org/{lang}/' target='_blank'>wol.jw.org</a>:</div>\n")
-    
-    # Chunks as clickable links
     let extract = proc(item: string): string = item.strip
     let chunks = createChunks(results.publications, extract)
     for chunk in chunks:
       let combinedLinks = convertRefs(chunk)
       let fullUrl = url & combinedLinks
       html.add(&"    <div class='chunk'><a href='{fullUrl}' target='_blank'>{chunk.join(\"; \")}</a></div>\n")
-    
-    # Individual links
     html.add("    <div class='individual-links'>\n")
     html.add("      <div class='instruction'>Individual links:</div>\n")
     for item in results.publications:
@@ -254,9 +246,7 @@ proc generateHtmlOutput(results: ExtractionResults, showScripts, showRefs: bool)
       let fullUrl = url & encoded
       html.add(&"      <a href='{fullUrl}' target='_blank'>{item.strip}</a>\n")
     html.add("    </div>\n")
-  
   html.add("  </body>\n</html>\n")
-  
   try:
     writeFile(htmlPath, html)
   except:
