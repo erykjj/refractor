@@ -139,7 +139,6 @@ proc outputScriptureLinks(results: seq[(string, string, string, string)], url: s
   for item in results:
     let (_, alt, official, extra) = item
     var r = (alt & " " & extra).strip
-    r = r.replace(";", "; ")
     let encoded = encodeForUrl((official & " " & extra).strip)
     stdout.styledWriteLine(fgGreen, &"{r}", fgDefault, " --> ", fgBlue, url & encoded)
   echo ""
@@ -186,7 +185,7 @@ proc generateHtmlOutput(results: ExtractionResults, showScripts, showRefs: bool)
     <html>
       <head>
         <meta charset="UTF-8">
-        <title>refractor Output</title>
+        <title>refractor output</title>
         <style>
           body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 2rem; line-height: 1.6; }
           h1 { color: #333; border-bottom: 2px solid #ddd; padding-bottom: 0.5rem; }
@@ -221,11 +220,9 @@ proc generateHtmlOutput(results: ExtractionResults, showScripts, showRefs: bool)
     html.add("      <div class='instruction'>Individual links:</div>\n")
     for item in results.scriptures:
       let (_, alt, official, extra) = item
-      var displayText = (alt & " " & extra).strip
-      displayText = displayText.replace(";", "; ")
       let encoded = encodeForUrl((official & " " & extra).strip)
       let fullUrl = url & encoded
-      html.add(&"      <a href='{fullUrl}' target='_blank'>{displayText}</a>\n")
+      html.add(&"      <a href='{fullUrl}' target='_blank'>{alt} {extra}</a>\n")
     html.add("    </div>\n")
 
   # Publications section
