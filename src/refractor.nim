@@ -9,7 +9,7 @@ const
     See LICENSE for full terms.                                              ]#
 
 import
-  std/[marshal, os, parseopt, strformat, strutils, tables, terminal, unicode, uri, xmlparser, xmltree],
+  std/[marshal, options, os, parseopt, strformat, strutils, tables, terminal, unicode, uri, xmlparser, xmltree],
   tabulator,
   zippy/ziparchives
 
@@ -39,10 +39,17 @@ type
     scriptureLangs: OrderedTable[string, (string, string, string)]
     publicationLangs: OrderedTable[string, (string, string, string)]
 
+  Config = object
+    languageCode: Option[string]
+    nameFormat: Option[string]
+    showReferences: Option[bool]
+    showScriptures: Option[bool]
+
 var
   lang = "en"
   inputFile = ""
   pkt: FocalizerPacket
+
 
 proc init(languageCode, nameFormat: cstring): cstring {.cdecl, dynlib: libName, importc.}
 proc extractAll(text: cstring): cstring {.cdecl, dynlib: libName, importc.}
@@ -179,6 +186,71 @@ proc languageList(list: OrderedTable[string, (string, string, string)]) =
     t.addRow(@[" " & name, vernacular, &"\e[32m{code}\e[0m", &"\e[32m{symbol}\e[0m"])
   t.renderTable(separator=false)
 
+proc createDefaultConfig(configPath: string) =
+  let defaultConfig = unindent(&"""
+    # refractor Configuration File
+    # Edit this file to set your preferred defaults
+
+    # Language code (run with -l to see supported languages)
+    # Examples: 'en' or 'E', 'es' or 'S' for Spanish, etc.
+    code=en
+
+    # Book name format:
+    #   full      - Full book name (e.g., "Genesis")
+    #   standard  - Standard abbreviation (e.g., "Gen.")
+    #   official  - Official abbreviation (e.g., "Ge")
+    format=official
+
+    # Output preferences (default: both shown)
+    # Uncomment to enable only one output type
+    # references=true
+    # scriptures=true
+    """, 4, " ")
+  try:
+    writeFile(configPath, defaultConfig)
+  except:
+    discard
+
+proc loadConfig(): Config =
+  let configPath = getAppDir() / "refractor.conf"
+  if not fileExists(configPath):
+    createDefaultConfig(configPath)
+  if getFileSize(configPath) == 0:
+    styledEcho fgYellow, &"\n Warning: Could not parse config file '{configPath}'\n Using defaults\n"
+    return
+  result = Config(
+    languageCode: none(string), 
+    nameFormat: none(string),
+    showReferences: none(bool),
+    showScriptures: none(bool)
+  )
+  try:
+    for line in lines(configPath):
+      let trimmed = line.strip()
+      if trimmed.len == 0 or trimmed.startsWith('#'):
+        continue
+      let parts = trimmed.split('=', 1)
+      if parts.len == 2:
+        let key = parts[0].strip().toLowerAscii()
+        let value = parts[1].strip()
+        case key
+        of "code":
+          if value.len > 0:
+            result.languageCode = some(value)
+        of "format":
+          let format = value.toLowerAscii()
+          if format in ["full", "standard", "official"]:
+            result.nameFormat = some(format)
+        of "references":
+          if value.toLowerAscii() == "true":
+            result.showReferences = some(true)
+        of "scriptures":
+          if value.toLowerAscii() == "true":
+            result.showScriptures = some(true)
+  except:
+    styledEcho fgYellow, &"\n Warning: Could not parse config file '{configPath}'\n Using defaults\n"
+    return
+
 proc main(showScripts, showRefs: bool) =
   let source = readSource(inputFile)
   if source == "":
@@ -222,14 +294,17 @@ when isMainModule:
 
       <infile>                          File to process (docx or text)
       """, 5, " ")
+
+  let config = loadConfig()
   var
     showHelp = false
     showVersion = false
     showList = false
     isError = false
-    showScripts = false
-    showRefs = false
-    nameFormat = "official"
+    showScripts = config.showScriptures.get(false)
+    showRefs = config.showReferences.get(false)
+    nameFormat = config.nameFormat.get("official")
+  lang = config.languageCode.get("en")
 
   for kind, key, val in getOpt():
     case kind
@@ -262,6 +337,10 @@ when isMainModule:
 
   let serializedPacket = init(lang.cstring, nameFormat.cstring)
   pkt = to[FocalizerPacket]($serializedPacket) # language and book data
+  if pkt.languageCode == "":
+    styledEcho fgRed, &"\n Error: language code '{lang}' not available"
+    echo &"\n See '{appName} -l' for list of available languages.\n"
+    quit(0)
   lang = pkt.languageCode
 
   if showHelp:
