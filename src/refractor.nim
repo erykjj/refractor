@@ -9,7 +9,7 @@ const
     See LICENSE for full terms.                                              ]#
 
 import
-  std/[marshal, options, os, parseopt, strformat, strutils, tables, terminal, unicode, uri, xmlparser, xmltree],
+  std/[algorithm, marshal, options, os, parseopt, strformat, strutils, tables, terminal, unicode, uri, xmlparser, xmltree],
   tabulator,
   zippy/ziparchives
 
@@ -52,7 +52,7 @@ var
 
 
 proc focus(languageCode, nameFormat: cstring): cstring {.cdecl, dynlib: libName, importc.}
-proc extractAll(text: cstring): cstring {.cdecl, dynlib: libName, importc.}
+proc extractAll(text: cstring, sortedOutput: bool): cstring {.cdecl, dynlib: libName, importc.}
 
 
 proc docxOpen(docxFile: string): string =
@@ -315,13 +315,13 @@ proc loadConfig(): Config =
     styledEcho fgYellow, &"\n Warning: Could not parse config file '{configPath}'\n Using defaults\n"
     return
 
-proc main(showScripts, showRefs: bool): ExtractionResults =
+proc main(showScripts, showRefs, sortedOutput: bool): ExtractionResults =
   let source = readSource(inputFile)
   if source == "":
     styledEcho fgRed, "\n Error: Could not read input file or file is empty"
     return
-  let serializedResults = extractAll(source.cstring)
-  let results = to[ExtractionResults]($serializedResults)
+  let serializedResults = extractAll(source.cstring, sortedOutput)
+  var results = to[ExtractionResults]($serializedResults)
   if showScripts:
     echo ""
     styledEcho fgYellow, $results.scriptures.len & " SCRIPTURE(S) FOUND\n"
@@ -331,6 +331,13 @@ proc main(showScripts, showRefs: bool): ExtractionResults =
     echo ""
     styledEcho fgYellow, $results.publications.len & " PUBLICATION REFERENCE(S) FOUND\n"
     if results.publications.len > 0:
+      if sortedOutput:
+        var sorted = results.publications.sorted(cmp)
+        var deduped: seq[string] = @[]
+        for i in 0..<sorted.len:
+          if i == 0 or sorted[i] != sorted[i-1]:
+            deduped.add(sorted[i])
+        results.publications = deduped
       outputPublications(results.publications)
   return results
 
@@ -340,7 +347,7 @@ when isMainModule:
     appName = getAppFilename().split(sep)[^1]
     appHelp = unindent(&"""
 
-      Usage: {appName} [-h | -v | -l] | [-r] [-s] [--full | --standard | --official] -c:code <infile>
+      Usage: {appName} [-h | -v | -l] | [-r] [-s] [--sorted] [--full | --standard | --official] -c:code <infile>
 
       Options:
         -h, --help                      Show this help message and exit
@@ -352,6 +359,8 @@ when isMainModule:
         -r, --references                Output publication references
         -s, --scriptures                Output scriptures (if neither -r nor -s
                                           is provided, both shown)
+        --sorted                        Sort output (scriptures by book order,
+                                          publications alphabetically)
 
       Scripture (book names) rewrite options:
         --full                          Use full name
@@ -370,6 +379,7 @@ when isMainModule:
     showScripts = config.showScriptures.get(false)
     showRefs = config.showReferences.get(false)
     nameFormat = config.nameFormat.get("official")
+    sortedOutput = false
   lang = config.languageCode.get("en")
 
   for kind, key, val in getOpt():
@@ -390,6 +400,8 @@ when isMainModule:
         showVersion = true
       of "list", "l":
         showList = true
+      of "sorted":
+        sortedOutput = true
       of "standard":
         nameFormat = "standard"
       of "full":
@@ -401,7 +413,7 @@ when isMainModule:
     of cmdEnd:
       discard
   let serializedPacket = focus(lang.cstring, nameFormat.cstring)
-  pkt = to[FocalizerPacket]($serializedPacket) # language and book data
+  pkt = to[FocalizerPacket]($serializedPacket)
   if pkt.languageCode == "":
     styledEcho fgRed, &"\n Error: language code '{lang}' not available"
     echo &"\n See '{appName} -l' for list of available languages.\n"
@@ -454,7 +466,7 @@ when isMainModule:
       quit(0)
 
   try:
-    let results = main(showScripts, showRefs)
+    let results = main(showScripts, showRefs, sortedOutput)
     generateHtmlOutput(results, showScripts, showRefs)
   finally:
     quit(0)
