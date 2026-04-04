@@ -1,7 +1,7 @@
 const
   App = "refractor"
   Copyright = "© 2026 Eryk J."
-  Version = "3.0.0"
+  Version = "3.1.0"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
     You may use and modify this code for personal, non-commercial purposes only.
@@ -28,7 +28,7 @@ else: # linux
 
 type
   ExtractionResults = object
-    scriptures: seq[(string, string, string, string)]
+    scriptures: seq[(string, string)]
     publications: seq[string]
 
   FocalizerPacket = object
@@ -51,7 +51,7 @@ var
   pkt: FocalizerPacket
 
 
-proc init(languageCode, nameFormat: cstring): cstring {.cdecl, dynlib: libName, importc.}
+proc focus(languageCode, nameFormat: cstring): cstring {.cdecl, dynlib: libName, importc.}
 proc extractAll(text: cstring): cstring {.cdecl, dynlib: libName, importc.}
 
 
@@ -88,8 +88,8 @@ proc constructUrl(): string =
 
 proc encodeForUrl(reference: string): string =
   var parts: seq[string] = @[]
-  for word in reference.split(' '):
-    let encodedWord = encodeUrl(word)
+  for word in reference.strip().split(' '):
+    let encodedWord = encodeUrl(word.replace("‑", "-"))
     parts.add(encodedWord)
   result = parts.join("+")
 
@@ -130,47 +130,40 @@ proc outputChunks(chunks: seq[seq[string]], url: string) =
 proc outputPublicationLinks(items: seq[string], url: string) =
   echo "\nOr use these individual links:\n"
   for r in items:
-    let encoded = encodeForUrl(r.strip)
-    stdout.styledWriteLine(fgGreen, &"{r.strip}", fgDefault, " --> ", fgBlue, url & encoded)
+    let encoded = encodeForUrl(r.strip())
+    stdout.styledWriteLine(fgGreen, &"{r.strip()}", fgDefault, " --> ", fgBlue, url & encoded)
   echo ""
 
-proc outputScriptureLinks(results: seq[(string, string, string, string)], url: string) =
+proc outputScriptureLinks(results: seq[(string, string)], url: string) =
   echo "\nOr use these individual links:\n"
   for item in results:
-    let (_, alt, official, extra) = item
-    var r = (alt & " " & extra).strip
-    let encoded = encodeForUrl((official & " " & extra).strip)
-    stdout.styledWriteLine(fgGreen, &"{r}", fgDefault, " --> ", fgBlue, url & encoded)
+    let (_, chosen) = item
+    let encoded = encodeForUrl(chosen)
+    stdout.styledWriteLine(fgGreen, &"{chosen}", fgDefault, " --> ", fgBlue, url & encoded)
   echo ""
 
-proc outputScriptures(results: seq[(string, string, string, string)]) =
+proc extractOfficial(item: (string, string)): string =
+  let (official, _) = item
+  official
 
-  proc extractAlt(item: (string, string, string, string)): string =
-    let (_, alt, _, extra) = item
-    (alt & " " & extra).strip
+proc extract(item: string): string =
+  item.strip
 
-  proc extractOfficial(item: (string, string, string, string)): string =
-    let (_, _, official, extra) = item
-    (official & " " & extra).strip
-
+proc outputScriptures(results: seq[(string, string)]) =
   let url = constructUrl()
-  let searchChunks = createChunks(results, extractAlt)
+  let searchChunks = createChunks(results, extractOfficial)
   stdout.styledWriteLine("You can paste these into the search box on ", fgBlue, &"https://wol.jw.org/{lang}:")
   for chunk in searchChunks:
-    styledEcho fgGreen, "\n" & chunk.join("; ")
-  
+    styledEcho fgGreen, "\n" & (chunk.join(";")).replace(" ", "")
+
   echo "\nOr use the link(s) to open wol.jw.org directly:"
   let urlChunks = createChunks(results, extractOfficial)
   for chunk in urlChunks:
     let combinedLinks = convertRefs(chunk)
     styledEcho fgBlue, "\n" & url & combinedLinks
-  
   outputScriptureLinks(results, url)
 
 proc outputPublications(results: seq[string]) =
-
-  proc extract(item: string): string = item.strip
-
   let url = constructUrl()
   let chunks = createChunks(results, extract)
   outputChunks(chunks, url)
@@ -208,9 +201,6 @@ proc generateHtmlOutput(results: ExtractionResults, showScripts, showRefs: bool)
   if showScripts and results.scriptures.len > 0:
     html.add(&"    <h2>Scripture references ({results.scriptures.len})</h2>\n")
     html.add(&"    <div class='instruction'>Grouped search on <a href='https://wol.jw.org/{lang}/' target='_blank'>wol.jw.org</a>:</div>\n")
-    let extractOfficial = proc(item: (string, string, string, string)): string =
-      let (_, _, official, extra) = item
-      (official & " " & extra).strip
     let urlChunks = createChunks(results.scriptures, extractOfficial)
     for chunk in urlChunks:
       let combinedLinks = convertRefs(chunk)
@@ -219,10 +209,10 @@ proc generateHtmlOutput(results: ExtractionResults, showScripts, showRefs: bool)
     html.add("    <div class='individual-links'>\n")
     html.add("      <div class='instruction'>Individual links:</div>\n")
     for item in results.scriptures:
-      let (_, alt, official, extra) = item
-      let encoded = encodeForUrl((official & " " & extra).strip)
+      let (official, chosen) = item
+      let encoded = encodeForUrl(official)
       let fullUrl = url & encoded
-      html.add(&"      <a href='{fullUrl}' target='_blank'>{alt} {extra}</a>\n")
+      html.add(&"      <a href='{fullUrl}' target='_blank'>{chosen}</a>\n")
     html.add("    </div>\n")
 
   # Publications section
@@ -230,7 +220,6 @@ proc generateHtmlOutput(results: ExtractionResults, showScripts, showRefs: bool)
     html.add("    <hr />\n")
     html.add(&"    <h2>Publication references ({results.publications.len})</h2>\n")
     html.add(&"    <div class='instruction'>Grouped search on <a href='https://wol.jw.org/{lang}/' target='_blank'>wol.jw.org</a>:</div>\n")
-    let extract = proc(item: string): string = item.strip
     let chunks = createChunks(results.publications, extract)
     for chunk in chunks:
       let combinedLinks = convertRefs(chunk)
@@ -239,9 +228,9 @@ proc generateHtmlOutput(results: ExtractionResults, showScripts, showRefs: bool)
     html.add("    <div class='individual-links'>\n")
     html.add("      <div class='instruction'>Individual links:</div>\n")
     for item in results.publications:
-      let encoded = encodeForUrl(item.strip)
+      let encoded = encodeForUrl(item)
       let fullUrl = url & encoded
-      html.add(&"      <a href='{fullUrl}' target='_blank'>{item.strip}</a>\n")
+      html.add(&"      <a href='{fullUrl}' target='_blank'>{item}</a>\n")
     html.add("    </div>\n")
   html.add("  </body>\n</html>\n")
   try:
@@ -411,8 +400,7 @@ when isMainModule:
         isError = true
     of cmdEnd:
       discard
-
-  let serializedPacket = init(lang.cstring, nameFormat.cstring)
+  let serializedPacket = focus(lang.cstring, nameFormat.cstring)
   pkt = to[FocalizerPacket]($serializedPacket) # language and book data
   if pkt.languageCode == "":
     styledEcho fgRed, &"\n Error: language code '{lang}' not available"
