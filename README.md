@@ -31,7 +31,8 @@ You will get a list that you can paste into the search box on [*Watchtower ONLIN
 ## Usage
 
 ```
-Usage: {appName} [-h | -v | -l] | [-r] [-s] [--full | --standard | --official] -c:code <infile>
+  refractor [-h | -v | -l] | [-r] [-s] [--sorted] [--full | --standard | --official] -c:code <infile>
+  refractor.exe [-h | -v | -l] | [-r] [-s] [--sorted] [--full | --standard | --official] -c:code <infile>
 
 Options:
   -h, --help                      Show this help message and exit
@@ -43,6 +44,8 @@ Options:
   -r, --references                Output publication references
   -s, --scriptures                Output scriptures (if neither -r nor -s
                                     is provided, both shown)
+  --sorted                        Sort output (scriptures by book order,
+                                    publications alphabetically)
 
 Scripture (book names) rewrite options:
   --full                          Use full name
