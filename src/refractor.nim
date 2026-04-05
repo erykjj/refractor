@@ -9,7 +9,7 @@ const
     See LICENSE for full terms.                                              ]#
 
 import
-  std/[algorithm, marshal, options, os, parseopt, strformat, strutils, tables, terminal, unicode, uri, xmlparser, xmltree],
+  std/[marshal, options, os, parseopt, strformat, strutils, tables, terminal, unicode, uri, xmlparser, xmltree],
   tabulator,
   zippy/ziparchives
 
@@ -315,29 +315,22 @@ proc loadConfig(): Config =
     styledEcho fgYellow, &"\n Warning: Could not parse config file '{configPath}'\n Using defaults\n"
     return
 
-proc main(showScripts, showRefs, sortedOutput: bool): ExtractionResults =
+proc main(showScripts, showRefs): ExtractionResults =
   let source = readSource(inputFile)
   if source == "":
     styledEcho fgRed, "\n Error: Could not read input file or file is empty"
     return
-  let serializedResults = extractAll(source.cstring, sortedOutput)
-  var results = to[ExtractionResults]($serializedResults)
+  let serializedResults = extractAll(source.cstring, true)
+  let results = to[ExtractionResults]($serializedResults)
   if showScripts:
     echo ""
-    styledEcho fgYellow, $results.scriptures.len & " SCRIPTURE(S) FOUND\n"
+    styledEcho fgYellow, $results.scriptures.len & " SCRIPTURE REFERENCES(S)\n"
     if results.scriptures.len > 0:
       outputScriptures(results.scriptures)
   if showRefs:
     echo ""
     styledEcho fgYellow, $results.publications.len & " PUBLICATION REFERENCE(S) FOUND\n"
     if results.publications.len > 0:
-      if sortedOutput:
-        var sorted = results.publications.sorted(cmp)
-        var deduped: seq[string] = @[]
-        for i in 0..<sorted.len:
-          if i == 0 or sorted[i] != sorted[i-1]:
-            deduped.add(sorted[i])
-        results.publications = deduped
       outputPublications(results.publications)
   return results
 
@@ -347,7 +340,7 @@ when isMainModule:
     appName = getAppFilename().split(sep)[^1]
     appHelp = unindent(&"""
 
-      Usage: {appName} [-h | -v | -l] | [-r] [-s] [--sorted] [--full | --standard | --official] -c:code <infile>
+      Usage: {appName} [-h | -v | -l] | [-r] [-s] [--full | --standard | --official] -c:code <infile>
 
       Options:
         -h, --help                      Show this help message and exit
@@ -359,8 +352,6 @@ when isMainModule:
         -r, --references                Output publication references
         -s, --scriptures                Output scriptures (if neither -r nor -s
                                           is provided, both shown)
-        --sorted                        Sort output (scriptures by book order,
-                                          publications alphabetically)
 
       Scripture (book names) rewrite options:
         --full                          Use full name
@@ -379,7 +370,6 @@ when isMainModule:
     showScripts = config.showScriptures.get(false)
     showRefs = config.showReferences.get(false)
     nameFormat = config.nameFormat.get("official")
-    sortedOutput = false
   lang = config.languageCode.get("en")
 
   for kind, key, val in getOpt():
@@ -400,8 +390,6 @@ when isMainModule:
         showVersion = true
       of "list", "l":
         showList = true
-      of "sorted":
-        sortedOutput = true
       of "standard":
         nameFormat = "standard"
       of "full":
@@ -466,7 +454,7 @@ when isMainModule:
       quit(0)
 
   try:
-    let results = main(showScripts, showRefs, sortedOutput)
+    let results = main(showScripts, showRefs)
     generateHtmlOutput(results, showScripts, showRefs)
   finally:
     quit(0)
