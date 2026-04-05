@@ -52,7 +52,7 @@ var
 
 
 proc focus(languageCode, nameFormat: cstring): cstring {.cdecl, dynlib: libName, importc.}
-proc extractAll(text: cstring, sortedOutput: bool): cstring {.cdecl, dynlib: libName, importc.}
+proc extractAll(text: cstring): cstring {.cdecl, dynlib: libName, importc.}
 
 
 proc docxOpen(docxFile: string): string =
@@ -315,21 +315,21 @@ proc loadConfig(): Config =
     styledEcho fgYellow, &"\n Warning: Could not parse config file '{configPath}'\n Using defaults\n"
     return
 
-proc main(showScripts, showRefs): ExtractionResults =
+proc main(showScripts, showRefs: bool): ExtractionResults =
   let source = readSource(inputFile)
   if source == "":
     styledEcho fgRed, "\n Error: Could not read input file or file is empty"
     return
-  let serializedResults = extractAll(source.cstring, true)
+  let serializedResults = extractAll(source.cstring)
   let results = to[ExtractionResults]($serializedResults)
   if showScripts:
     echo ""
-    styledEcho fgYellow, $results.scriptures.len & " SCRIPTURE REFERENCES(S)\n"
+    styledEcho fgYellow, "SCRIPTURE REFERENCES (" & $results.scriptures.len & ")\n"
     if results.scriptures.len > 0:
       outputScriptures(results.scriptures)
   if showRefs:
     echo ""
-    styledEcho fgYellow, $results.publications.len & " PUBLICATION REFERENCE(S) FOUND\n"
+    styledEcho fgYellow, "PUBLICATION REFERENCES (" & $results.publications.len & ")\n"
     if results.publications.len > 0:
       outputPublications(results.publications)
   return results
