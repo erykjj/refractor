@@ -44,8 +44,6 @@ Options:
   -r, --references                Output publication references
   -s, --scriptures                Output scriptures (if neither -r nor -s
                                     is provided, both shown)
-  --sorted                        Sort output (scriptures by book order,
-                                    publications alphabetically)
 
 Scripture (book names) rewrite options:
   --full                          Use full name
