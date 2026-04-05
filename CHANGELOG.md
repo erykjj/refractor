@@ -6,6 +6,9 @@
 
 ### Changed
 
+- Using my [linkture](https://github.com/erykjj/linkture) library for scripture parsing
+- Sorted and combined scripture references
+
 ### Fixed
 
 ### Removed
