@@ -4,8 +4,6 @@
 
 ### Added
 
-- Added `--original` option to keep scriptures in original order - without combining
-
 ### Changed
 
 ### Fixed
@@ -13,6 +11,15 @@
 ### Removed
 
 ____
+## [v3.2.0] - 2026-05-08
+### Added
+
+- Added `--original` option to keep scriptures in original order - without combining
+
+### Changed
+
+- Update focalizer to v3.1.0
+
 ## [v3.1.0] - 2026-04-05
 ### Changed
 
@@ -73,6 +80,7 @@ ____
 - Initial release
 
 ____
+[v3.2.0]:https://github.com/erykjj/refractor/releases/tag/v3.2.0
 [v3.1.0]:https://github.com/erykjj/refractor/releases/tag/v3.1.0
 [v3.0.0]:https://github.com/erykjj/refractor/releases/tag/v3.0.0
 [v2.0.0]:https://github.com/erykjj/refractor/releases/tag/v2.0.0
