@@ -339,7 +339,8 @@ when isMainModule:
     appName = getAppFilename().split(sep)[^1]
     appHelp = unindent(&"""
 
-      Usage: {appName} [-h | -v | -l] | [-r] [-s] [--full | --standard | --official] -c:code <infile>
+      Usage: {appName} [-h | -v | -l] | [-r] [-s] [--original]
+                       [--full | --standard | --official] [-c:code] <infile>
 
       Options:
         -h, --help                      Show this help message and exit
