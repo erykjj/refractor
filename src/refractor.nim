@@ -1,7 +1,7 @@
 const
   App = "refractor"
   Copyright = "© 2026 Eryk J."
-  Version = "3.1.0"
+  Version = "3.2.0"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
     You may use and modify this code for personal, non-commercial purposes only.
@@ -52,8 +52,7 @@ var
 
 
 proc focus(languageCode, nameFormat: cstring): cstring {.cdecl, dynlib: libName, importc.}
-proc extractAll(text: cstring): cstring {.cdecl, dynlib: libName, importc.}
-
+proc extractAll(text: cstring, original: bool): cstring {.cdecl, dynlib: libName, importc.}
 
 proc docxOpen(docxFile: string): string =
   let reader = openZipArchive(docxFile)
@@ -315,12 +314,12 @@ proc loadConfig(): Config =
     styledEcho fgYellow, &"\n Warning: Could not parse config file '{configPath}'\n Using defaults\n"
     return
 
-proc main(showScripts, showRefs: bool): ExtractionResults =
+proc main(showScripts, showRefs, original: bool): ExtractionResults =
   let source = readSource(inputFile)
   if source == "":
     styledEcho fgRed, "\n Error: Could not read input file or file is empty"
     return
-  let serializedResults = extractAll(source.cstring)
+  let serializedResults = extractAll(source.cstring, original)
   let results = to[ExtractionResults]($serializedResults)
   if showScripts:
     echo ""
@@ -353,6 +352,9 @@ when isMainModule:
         -s, --scriptures                Output scriptures (if neither -r nor -s
                                           is provided, both shown)
 
+        --original                      Don't sort/combine scriptures;
+                                          output in original order
+
       Scripture (book names) rewrite options:
         --full                          Use full name
         --standard                      Use standard name
@@ -370,6 +372,7 @@ when isMainModule:
     showScripts = config.showScriptures.get(false)
     showRefs = config.showReferences.get(false)
     nameFormat = config.nameFormat.get("official")
+    original = false
   lang = config.languageCode.get("en")
 
   for kind, key, val in getOpt():
@@ -396,6 +399,8 @@ when isMainModule:
         nameFormat = "full"
       of "official":
         nameFormat = "official"
+      of "original":
+        original = true
       else:
         isError = true
     of cmdEnd:
@@ -454,7 +459,7 @@ when isMainModule:
       quit(0)
 
   try:
-    let results = main(showScripts, showRefs)
+    let results = main(showScripts, showRefs, original)
     generateHtmlOutput(results, showScripts, showRefs)
   finally:
     quit(0)
