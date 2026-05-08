@@ -4,6 +4,8 @@
 
 ### Added
 
+- Added `--original` option to keep scriptures in original order - without combining
+
 ### Changed
 
 ### Fixed
