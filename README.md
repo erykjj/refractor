@@ -31,8 +31,9 @@ You will get a list that you can paste into the search box on [*Watchtower ONLIN
 ## Usage
 
 ```
-  refractor [-h | -v | -l] | [-r] [-s] [--sorted] [--full | --standard | --official] -c:code <infile>
-  refractor.exe [-h | -v | -l] | [-r] [-s] [--sorted] [--full | --standard | --official] -c:code <infile>
+refractor [-h | -v | -l] | [-r] [-s] [--original] [--full | --standard | --official] [-c:code] <infile>
+refractor.exe [-h | -v | -l] | [-r] [-s] [--original] [--full | --standard | --official] [-c:code] <infile>
+
 
 Options:
   -h, --help                      Show this help message and exit
