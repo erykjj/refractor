@@ -11,6 +11,11 @@
 ### Removed
 
 ____
+## [v3.2.1] - 2026-05-09
+### Added
+
+- Add `--original` flag to config file processing
+
 ## [v3.2.0] - 2026-05-08
 ### Added
 
@@ -80,6 +85,7 @@ ____
 - Initial release
 
 ____
+[v3.2.1]:https://github.com/erykjj/refractor/releases/tag/v3.2.1
 [v3.2.0]:https://github.com/erykjj/refractor/releases/tag/v3.2.0
 [v3.1.0]:https://github.com/erykjj/refractor/releases/tag/v3.1.0
 [v3.0.0]:https://github.com/erykjj/refractor/releases/tag/v3.0.0
