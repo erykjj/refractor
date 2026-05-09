@@ -1,7 +1,7 @@
 const
   App = "refractor"
   Copyright = "© 2026 Eryk J."
-  Version = "3.2.0"
+  Version = "3.2.1"
 
 #[  This code is licensed under the Infiniti Noncommercial License.
     You may use and modify this code for personal, non-commercial purposes only.
@@ -44,6 +44,7 @@ type
     nameFormat: Option[string]
     showReferences: Option[bool]
     showScriptures: Option[bool]
+    original: Option[bool]
 
 var
   lang = "en"
@@ -264,6 +265,9 @@ proc createDefaultConfig(configPath: string) =
     #   official  - Official abbreviation (e.g., "Ge")
     format=official
 
+    # Preserve original scripture order (default: false)
+    # original=true
+
     # Output preferences (default: both shown)
     # Uncomment to enable only one output type
     # references=true
@@ -285,7 +289,8 @@ proc loadConfig(): Config =
     languageCode: none(string), 
     nameFormat: none(string),
     showReferences: none(bool),
-    showScriptures: none(bool)
+    showScriptures: none(bool),
+    original: none(bool)
   )
   try:
     for line in lines(configPath):
@@ -310,6 +315,9 @@ proc loadConfig(): Config =
         of "scriptures":
           if value.toLowerAscii() == "true":
             result.showScriptures = some(true)
+        of "original":
+          if value.toLowerAscii() == "true":
+            result.original = some(true)
   except:
     styledEcho fgYellow, &"\n Warning: Could not parse config file '{configPath}'\n Using defaults\n"
     return
@@ -373,7 +381,7 @@ when isMainModule:
     showScripts = config.showScriptures.get(false)
     showRefs = config.showReferences.get(false)
     nameFormat = config.nameFormat.get("official")
-    original = false
+    original = config.original.get(false)
   lang = config.languageCode.get("en")
 
   for kind, key, val in getOpt():
