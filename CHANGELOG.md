@@ -11,10 +11,10 @@
 ### Removed
 
 ____
-## [v3.4.0] - 2026-10-14
+## [v3.4.1] - 2026-10-14
 ### Changed
 
-- Update focalizer to v3.4.0
+- Update focalizer to v3.4.1
   - Add singular/plural variants for Psalms to some languages
 
 ## [v3.3.1] - 2026-10-05
@@ -102,7 +102,7 @@ ____
 - Initial release
 
 ____
-[v3.4.0]:https://github.com/erykjj/refractor/releases/tag/v3.4.0
+[v3.4.1]:https://github.com/erykjj/refractor/releases/tag/v3.4.1
 [v3.3.1]:https://github.com/erykjj/refractor/releases/tag/v3.3.1
 [v3.3.0]:https://github.com/erykjj/refractor/releases/tag/v3.3.0
 [v3.2.1]:https://github.com/erykjj/refractor/releases/tag/v3.2.1
