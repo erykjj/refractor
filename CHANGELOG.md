@@ -6,7 +6,7 @@
 
 ### Changed
 
-- Update focalizer to v3.3.0
+- Update focalizer to v3.4.0
   - Add singular/plural variants for Psalms to some languages
 
 ### Fixed
