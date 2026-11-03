@@ -1,4 +1,4 @@
-name: 'Linux and Windows v1.2.0'
+name: 'Linux and Windows v1.2.1'
 
 on:
   workflow_call:
@@ -25,11 +25,12 @@ jobs:
       - name: Set up Nim
         uses: jiro4989/setup-nim-action@v2
         with:
-          nim-version: '2.2.8'
+          nim-version: '2.2.12'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies and compiler
         run: |
+          nimble update -y
           nimble install -y zippy
           nimble install -y tabulator
           sudo snap install zig --classic --beta
