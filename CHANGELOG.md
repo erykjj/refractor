@@ -11,6 +11,13 @@
 ### Removed
 
 ____
+## [v3.5.0] - 2026-11-03
+### Changed
+
+- Update focalizer to v3.5.1
+  - Handle roman numeral variants better
+  - Various tweaks and parsing improvements
+
 ## [v3.4.1] - 2026-10-14
 ### Changed
 
@@ -102,6 +109,7 @@ ____
 - Initial release
 
 ____
+[v3.5.0]:https://github.com/erykjj/refractor/releases/tag/v3.5.0
 [v3.4.1]:https://github.com/erykjj/refractor/releases/tag/v3.4.1
 [v3.3.1]:https://github.com/erykjj/refractor/releases/tag/v3.3.1
 [v3.3.0]:https://github.com/erykjj/refractor/releases/tag/v3.3.0
