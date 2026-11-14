@@ -11,6 +11,12 @@
 ### Removed
 
 ____
+## [v3.6.0] - 2026-11-13
+### Changed
+
+- Update focalizer to v3.6.0
+  - Various detection improvements
+
 ## [v3.5.2] - 2026-11-04
 ### Changed
 
@@ -115,6 +121,7 @@ ____
 - Initial release
 
 ____
+[v3.6.0]:https://github.com/erykjj/refractor/releases/tag/v3.6.0
 [v3.5.2]:https://github.com/erykjj/refractor/releases/tag/v3.5.2
 [v3.5.0]:https://github.com/erykjj/refractor/releases/tag/v3.5.0
 [v3.4.1]:https://github.com/erykjj/refractor/releases/tag/v3.4.1
