@@ -11,6 +11,12 @@
 ### Removed
 
 ____
+## [v3.7.0] - 2026-11-21
+### Changed
+
+- Update focalizer to v3.7.0
+  - Updated some Bible book names
+
 ## [v3.6.1] - 2026-11-14
 ### Changed
 
@@ -127,6 +133,7 @@ ____
 - Initial release
 
 ____
+[v3.7.0]:https://github.com/erykjj/refractor/releases/tag/v3.7.0
 [v3.6.1]:https://github.com/erykjj/refractor/releases/tag/v3.6.1
 [v3.6.0]:https://github.com/erykjj/refractor/releases/tag/v3.6.0
 [v3.5.2]:https://github.com/erykjj/refractor/releases/tag/v3.5.2
