@@ -11,6 +11,12 @@
 ### Removed
 
 ____
+## [v3.7.1] - 2026-11-24
+### Changed
+
+- Update focalizer to v3.7.1
+  - Add crash guards
+
 ## [v3.7.0] - 2026-11-21
 ### Changed
 
@@ -133,6 +139,7 @@ ____
 - Initial release
 
 ____
+[v3.7.1]:https://github.com/erykjj/refractor/releases/tag/v3.7.1
 [v3.7.0]:https://github.com/erykjj/refractor/releases/tag/v3.7.0
 [v3.6.1]:https://github.com/erykjj/refractor/releases/tag/v3.6.1
 [v3.6.0]:https://github.com/erykjj/refractor/releases/tag/v3.6.0
